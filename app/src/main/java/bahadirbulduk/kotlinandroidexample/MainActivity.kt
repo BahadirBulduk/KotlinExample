@@ -1,5 +1,6 @@
 package bahadirbulduk.kotlinandroidexample
 
+import android.os.AsyncTask
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
 import android.widget.TextView
@@ -24,16 +25,15 @@ class MainActivity : AppCompatActivity() {
      */
 
     @BindView(R.id.example_textview)
-    lateinit var exampleTextviewButterKnife : TextView
+    lateinit var exampleTextviewButterKnife: TextView
 
-    lateinit  var postmanager : PostManager
-    private var postResponse : PostResponse? = null
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        postmanager = PostManager()
+        val postmanager = PostManager()
 
         // ButterKnife version
         ButterKnife.bind(this)
@@ -50,16 +50,28 @@ class MainActivity : AppCompatActivity() {
 
         //Click listener for button
         this.click_me.setOnClickListener {
-            Toast.makeText(applicationContext,"Clicked Button",Toast.LENGTH_SHORT).show()
+            Toast.makeText(applicationContext, "Clicked Button", Toast.LENGTH_SHORT).show()
         }
 
-        val exec = Executors.newScheduledThreadPool(4)
-        exec.execute(Runnable {
-            postResponse = postmanager.getPost()
-            val title = (postResponse as PostResponse).title
-            exampleTextviewButterKnife.setText(title)
-        })
+        getPost(exampleTextviewButterKnife,postmanager).execute()
+
+    }
+
+    open class getPost(textView: TextView , postManager: PostManager ) : AsyncTask<Void, Void, String>() {
+        val exampleTextview = textView
+        val postmanager = postManager
 
 
+
+        override fun doInBackground(vararg params: Void?): String {
+            val postResponse = postmanager.getPost()
+            val title = postResponse.title
+            return title
+        }
+
+        override fun onPostExecute(title: String?) {
+            super.onPostExecute(title)
+            exampleTextview.text = title
+        }
     }
 }
